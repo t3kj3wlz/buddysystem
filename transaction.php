@@ -16,7 +16,7 @@ class Transaction extends Record{
         'P',
         'T'
     );
-    
+
     public $teh_date;
     public $trans_type;
     public $product_amount;
@@ -122,18 +122,36 @@ class Transaction extends Record{
             Stash::increase('usd',$payment,$username);
         }
         Inventory::increase($strain,-1 * abs($amount),$username);
-        return self::add("S",$amount,$payment,$buyer,$strain,$username,$front,$discrepency);   
+        return self::add("S",$amount,$payment,$buyer,$strain,$username,$front,$discrepency);
     }
     public static function makePurchase($vendor,$strain,$amount,$payment,$username,$front = false){
-	if(!$front){
-	    Stash::increase('usd',-1 * abs($payment),$username);
-	}
-        Inventory::increase($strain,$amount,$username);
-        return self::add("P",$amount,$payment,$vendor,$strain,$username,$front);
+      if(!$front){
+        Stash::increase('usd',-1 * abs($payment),$username);
+      }
+      Inventory::increase($strain,$amount,$username);
+      return self::add("P",$amount,$payment,$vendor,$strain,$username,$front);
     }
     public static function acceptTip($amount,$buyer,$username){
         self::add("T",0,$amount,$buyer,-1,$username);
         return Stash::increase('usd',$amount,$username);
+    }
+    public static function settleFront($UID){
+      try{
+        $transaction = new self($UID);
+      }catch(\Exception($e)){
+        throw new \Exception($e->getMessage());
+      }
+      if(!$transaction->front){
+        throw new \Exception('Cannot settle a non front');
+      }
+      if($transaction->trans_type == 'P'){
+        Stash::increase('usd',-1 * abs($transaction->payment),$transaction->user);
+      }else{
+        Stash::increase('usd',$transaction->payment,$transaction->user);
+      }
+      $transaction->front_paid = date('Y-m-d H:i:s');
+      $transaction->update();
+      return $transaction;
     }
 
 }

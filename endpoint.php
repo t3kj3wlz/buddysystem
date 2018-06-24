@@ -77,6 +77,8 @@ class EndPoint extends \API{
             $data = \Buddy\Transaction::acceptTip($this->request->amount,$this->request->buyer,$this->user->username);
         }elseif(strtolower($this->verb) == 'purchase' && !isset($this->args[0]) && $this->method == 'POST'){
             $data = \Buddy\Transaction::makePurchase($this->request->vendor,$this->request->strain,$this->request->amount,$this->request->payment,$this->user->username,$this->request->front);
+        }elseif(strtolower($this->verb) == 'front' && isset($this->args[0]) && $this->method == 'GET'){
+            $data = \Buddy\Transaction::settleFront($this->args[0]);
         }elseif(!isset($this->verb) && !isset($this->args[0]) && $this->method == 'GET'){ //get all
             $data = \Buddy\Transaction::get("all",0,$this->user->username);
         }elseif(!isset($this->verb) &&(int)$this->args[0] && $this->method == 'GET'){ //get by id
@@ -92,7 +94,7 @@ class EndPoint extends \API{
         }else{
             throw new \Exception('Malformed Request');
         }
-        return $data;        
+        return $data;
     }
     //\Buddy\Inventory::getCurrentInventory($this->user->username);
     //\Buddy\Inventory::calculateCurrentInventory($this->user->username);
@@ -116,7 +118,7 @@ class EndPoint extends \API{
         }else{
             throw new \Exception('Malformed Request');
         }
-        return $data;        
+        return $data;
     }
     protected function stash_usd(){
         $data = null;
