@@ -138,7 +138,7 @@ class Transaction extends Record{
     public static function settleFront($UID){
       try{
         $transaction = new self($UID);
-      }catch(\Exception() $e){
+      }catch(\Exception $e){
         throw new \Exception($e->getMessage());
       }
       if(!$transaction->front){
